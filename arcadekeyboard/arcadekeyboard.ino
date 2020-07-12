@@ -3,19 +3,20 @@
 #include <Keyboard.h>
 
 #define BUTTON_PIN 0
-#define LED_PIN 13
 
 Bounce debouncer = Bounce();
 
 Adafruit_DotStar strip = Adafruit_DotStar(1, INTERNAL_DS_DATA, INTERNAL_DS_CLK, DOTSTAR_BGR);
 
-uint32_t color = 0xFF0000;
+unsigned short currentColor = 0;
+uint32_t colors[] = { 0x00CCFF, 0x00CC00, 0x0000CC, 0xFF8000, 0xB404AE, 0xFA58AC };
+const short numColors = sizeof(colors) / sizeof(colors[0]);
+
 unsigned long prevMillis = 0;
 
 void setup() {
   debouncer.attach(BUTTON_PIN, INPUT_PULLUP);
   debouncer.interval(30);
-  pinMode(LED_PIN, OUTPUT);
   Keyboard.begin();
   strip.begin();
 }
@@ -29,23 +30,25 @@ void loop() {
   if (nowMillis - prevMillis >= 1000) {
     prevMillis = nowMillis;
     
-    if((color >>= 8) == 0) {
-      color = 0xFF0000; 
-    }
+    strip.setPixelColor(0, colors[currentColor]); 
 
-    strip.setPixelColor(0, color); 
+    currentColor++;
+    if (currentColor > numColors - 1) {
+      currentColor = 0;
+    }
+    
     strip.show();    
   }
 
   if (debouncer.fell()) {
-    digitalWrite(LED_PIN, HIGH);
+    strip.setPixelColor(0, 0xFF0000);
+    strip.show();
     Keyboard.press(KEY_LEFT_CTRL);
     Keyboard.press(KEY_LEFT_ALT);
     Keyboard.press(KEY_LEFT_GUI);
     Keyboard.press(KEY_F1);
     delay(100);
     Keyboard.releaseAll();
-    
-    digitalWrite(LED_PIN, LOW);
+    delay(600);
   }
 }

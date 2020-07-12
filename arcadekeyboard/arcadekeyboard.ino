@@ -21,7 +21,6 @@ void setup() {
   strip.begin();
 }
  
-// the loop function runs over and over again forever
 void loop() {
   debouncer.update();
 
